@@ -72,7 +72,7 @@ String Browser::dumpHistory()
 
     while(!history.empty())
     {
-        str.append("|");
+        str.append("\n");
         str.append(history.front().getConstData());
         history.pop();
     }

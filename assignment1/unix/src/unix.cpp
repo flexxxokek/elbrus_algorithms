@@ -6,7 +6,7 @@
 #include <unix.hpp>
 
 String UnixPath::solve(const char* inputPath) const
-{    
+{
     List<String> pathList;
     using PathNode = decltype(pathList)::Node;
 
@@ -36,9 +36,9 @@ String UnixPath::solve(const char* inputPath) const
         pathList.insertBefore(pathList.end(), String(iter - nameLength, iter));
     }
 
-    // for(const PathNode *iter = pathList.head->next; iter != pathList.tail; iter = iter->next)
+    // for(const PathNode *iter = pathList.begin(); iter != pathList.end(); iter = iter->next)
     // {
-    //     printf("Node: %s\n", iter->val.data);
+    //     printf("Node: %s\n", iter->val.getConstData());
     // }
     
     
@@ -52,7 +52,7 @@ String UnixPath::solve(const char* inputPath) const
             #warning !!!!!!!!!
             if(iter == pathList.begin())
             {
-                printf("Going upper than the root directory is not possible.\n");
+                return ERROR_STRING;
                 break;
             }
             // printf("found .. directory\n");
@@ -67,14 +67,17 @@ String UnixPath::solve(const char* inputPath) const
     }
 
     String canonPath;
+    //root dir
+    canonPath.append("/"); 
+
     for(const PathNode* iter = pathList.begin(); iter != pathList.end(); iter = iter->next)
     {
-        canonPath.append("/");
         canonPath.append(iter->val.getConstData());
+        if(iter != pathList.end()->prev) canonPath.append("/");
     }
 
 
     // puts(path.data);
-
+    
     return canonPath;
 }

@@ -1,10 +1,9 @@
 #include <gtest/gtest.h>
 #include <unix.hpp>
 
-
 TEST(UnixSimpleTests, SimpleCases)
 {
-    Solution solver;
+    UnixPath solver;
 
     String s = solver.solve("/sssss////ss/s");
 
@@ -13,4 +12,15 @@ TEST(UnixSimpleTests, SimpleCases)
     s = solver.solve("/s/../s/./s/");
 
     EXPECT_STREQ(s.getConstData(), "/s/s");
+}
+
+TEST(UnixSimpleTests, RootDirCases)
+{
+    UnixPath solver;
+
+    String s = solver.solve("/sssss////../..");
+
+    
+
+    EXPECT_STREQ(s.getConstData(), UnixPath::ERROR_STRING);
 }

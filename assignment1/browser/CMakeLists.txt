@@ -28,6 +28,9 @@ target_sources(browser
         include/browser.hpp
 )
 
+add_executable(stdin src/stdin.cpp)
+target_link_libraries(stdin browser)
+
 
 find_package(GTest REQUIRED)
 

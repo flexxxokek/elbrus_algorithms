@@ -399,6 +399,8 @@ struct String
 
     void append(const char* str)
     {
+        if(str == NULL) return;
+
         u64 strSize = strlen(str);
 
         char* newStr = new char[size + strSize + 1];

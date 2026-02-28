@@ -1,1 +1,1 @@
-cmake -B tests
+cmake -B build_tests

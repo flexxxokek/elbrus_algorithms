@@ -1,8 +1,6 @@
 cmake_minimum_required(VERSION 3.23)
 project(MyUnix)
 
-find_package(GTest REQUIRED)
-
 set(MYSTRUCT_PATH "../../mystruct")
 
 add_library(unix)
@@ -28,6 +26,8 @@ target_sources(unix
         include/unix.hpp
 )
 
+add_executable(stdin src/stdin.cpp)
+target_link_libraries(stdin unix)
 
 find_package(GTest REQUIRED)
 

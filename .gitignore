@@ -42,5 +42,7 @@
 
 #build directories
 build
+build_*
 
+#vscode BS
 .vscode
