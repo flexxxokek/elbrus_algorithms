@@ -14,11 +14,11 @@ TEST(ListTests, simple)
         list.insertBefore(list.end(), i);
     }
 
-    auto nd = list.begin()->next->next;
+    auto nd = ++(++list.begin());
 
     for(i64 i = 0; i < 3; i++)
     {
-        list.erase(nd->next);
+        list.erase(++nd);
     }
     
     auto list_i = list.begin();
@@ -26,8 +26,8 @@ TEST(ListTests, simple)
 
     for(const auto i : arr)
     {
-        EXPECT_EQ(list_i->val, i);
-        list_i = list_i->next;
+        EXPECT_EQ(*list_i, i);
+        list_i++;
     }
 }
 
@@ -49,11 +49,11 @@ TEST(ListOfStringsTests, simple)
         list.insertBefore(list.end(), std::to_string(i).c_str());
     }
 
-    auto nd = list.begin()->next->next;
+    auto nd = ++(++list.begin());
 
     for(i64 i = 0; i < 3; i++)
     {
-        list.erase(nd->next);
+        list.erase(++nd);
     }
     
     auto list_i = list.begin();
@@ -61,8 +61,8 @@ TEST(ListOfStringsTests, simple)
 
     for(const auto i : arr)
     {
-        EXPECT_STREQ(list_i->val.getConstData(), i);
-        list_i = list_i->next;
+        EXPECT_STREQ(list_i->getConstData(), i);
+        list_i++;
     }
 
     EXPECT_EQ(list.getSize(), arr.size());
@@ -109,4 +109,17 @@ TEST(QueueTests, simple)
         EXPECT_EQ(q.front(), i);
         q.pop();
     }
+}
+
+TEST(IteratortTests, simple)
+{
+    struct st
+    {
+        int a;
+    };
+
+    List<st> list;
+    list.insertBefore(list.end(), st{1});
+    auto it = list.begin();
+    EXPECT_EQ(it->a, 1);
 }
