@@ -123,6 +123,17 @@ SORTEDNESS_MARKERS = {
 }
 SKIP_INDIVIDUAL = {"RadixSortBase10", "RadixSortBase20", "RadixSortBase100", "StdSort"}
 
+# Алгоритмы с квадратичной сложностью — сравниваем между собой
+QUADRATIC_SORTS = {"BubbleSort", "InsertionSort", "SelectionSort", "ShellSort",
+                   "CocktailSort", "CocktailShakerSort", "ShakerSort",
+                   "GnomeSort", "CombSort", "OddEvenSort"}
+
+# Палитра для квадратичных сортировок
+QUADRATIC_PALETTE = [
+    "#d62728", "#e07b39", "#e6b800", "#2ca02c",
+    "#17becf", "#9467bd", "#8c564b", "#bcbd22",
+]
+
 # ==============================================================================
 # Вспомогательные функции
 # ==============================================================================
@@ -361,6 +372,85 @@ if has_any:
     fig.savefig(path, dpi=150, bbox_inches="tight")
     print(f"Saved: {path}")
     plt.close(fig)
+
+# ==============================================================================
+# График: сравнение квадратичных сортировок (среднее по всем степеням сортированности)
+# ==============================================================================
+quad_names = [s for s in results if s in QUADRATIC_SORTS]
+
+if quad_names:
+    fig, (ax_ll, ax_norm) = plt.subplots(1, 2, figsize=(16, 6))
+    all_sizes_q: list[float] = []
+    all_avgs_q: list[np.ndarray] = []
+
+    for idx, sort_name in enumerate(sorted(quad_names)):
+        color = QUADRATIC_PALETTE[idx % len(QUADRATIC_PALETTE)]
+        marker = list(SORTEDNESS_MARKERS.values())[idx % len(SORTEDNESS_MARKERS)]
+
+        # Собираем все точки (size → список времён по всем случаям)
+        size_times: dict[int, list[float]] = defaultdict(list)
+        for points in results[sort_name].values():
+            for size, t in points:
+                size_times[size].append(t)
+
+        if not size_times:
+            continue
+
+        sizes = np.array(sorted(size_times.keys()), dtype=float)
+        avg_times = np.array(
+            [sum(size_times[int(s)]) / len(size_times[int(s)]) for s in sizes]
+        )
+        all_sizes_q.extend(sizes)
+        all_avgs_q.append(avg_times)
+
+        # log-log
+        ax_ll.plot(sizes, avg_times,
+                   marker=marker, color=color,
+                   linewidth=1.5, markersize=5,
+                   label=sort_name, zorder=3)
+
+        # нормировка T/(n²)  — горизонталь = O(n²)
+        norm_n2 = sizes ** 2
+        ax_norm.plot(sizes, avg_times / norm_n2 * 1e9,
+                     marker=marker, color=color,
+                     linewidth=1.5, markersize=5,
+                     label=sort_name, zorder=3)
+
+    apply_loglog_axes(ax_ll)
+    if all_sizes_q:
+        add_reference_lines(ax_ll, sorted(set(all_sizes_q)), all_avgs_q, include_n2=True)
+
+    ax_ll.set_title("Время vs. n (log-log шкала)", fontweight="bold", fontsize=12)
+    ax_ll.set_xlabel("Размер массива n")
+    ax_ll.set_ylabel("Среднее время (µs)")
+    ax_ll.legend(title="Алгоритм", loc="upper left", framealpha=0.9)
+
+    ax_norm.set_xscale("log")
+    ax_norm.xaxis.set_major_formatter(ticker.FuncFormatter(log_power_formatter))
+    ax_norm.grid(True, which="major", linestyle="--", alpha=0.4)
+    ax_norm.grid(True, which="minor", linestyle=":", alpha=0.2)
+    ax_norm.set_title("T / n² — горизонталь = O(n²)", fontweight="bold", fontsize=12)
+    ax_norm.set_xlabel("Размер массива n")
+    ax_norm.set_ylabel("T / n² [усл. ед.]")
+    ax_norm.legend(title="Алгоритм", loc="best", framealpha=0.9)
+    ax_norm.annotate(
+        "Горизонталь → O(n²)\nРост → хуже O(n²)\nПадение → ближе к O(n log n)",
+        xy=(0.97, 0.05), xycoords="axes fraction",
+        ha="right", va="bottom", fontsize=8.5,
+        bbox=dict(boxstyle="round,pad=0.4", fc="lightyellow", ec="#cccccc", alpha=0.9),
+    )
+
+    fig.suptitle("Сравнение квадратичных сортировок\n"
+                 "(среднее по всем степеням сортированности)",
+                 fontsize=15, fontweight="bold")
+    fig.subplots_adjust(left=0.07, right=0.95, top=0.85, bottom=0.12, wspace=0.35)
+
+    path = out_dir / "quadratic_sorts_comparison.png"
+    fig.savefig(path, dpi=150, bbox_inches="tight")
+    print(f"Saved: {path}")
+    plt.close(fig)
+else:
+    print("No quadratic sort benchmarks found (BubbleSort, InsertionSort, etc.) — skipping comparison chart.")
 
 if args.show:
     plt.show()
